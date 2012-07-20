@@ -58,7 +58,7 @@ public:
    * @brief The constructor for the follower.
    * Constructor for the follower.
    */
-
+  TurtlebotFollower() : min_y_(0.1), max_y_(0.5),
                         min_x_(-0.2), max_x_(0.2),
                         max_z_(0.8), goal_z_(0.6),
                         z_scale_(1.0), x_scale_(5.0) 
@@ -220,6 +220,7 @@ private:
       {
         ROS_INFO("%i", reaction);
 	react(reaction);
+	ros::Duration(0.5).sleep();
 	/*
         if (stim_prox2_.size() > 1) 
         {
