@@ -125,10 +125,11 @@ private:
     }
     */
    stim_prox2_ = msg->prox2;
+   stim_prox4_ = msg->prox4;
     
   }
 
-  void react(int reaction) 
+  void react(int reaction, double z) 
   {
     ROS_INFO("%i", reaction);
     geometry_msgs::Twist cmd;
@@ -143,7 +144,7 @@ private:
         cmd.angular.z = 6;
         break;
       case FORWARD:
-        cmd.linear.x = 5;
+        cmd.linear.x = (z - goal_z_) * z_scale_;
         cmd.angular.z = 0;
         break;
       case BACKWARD:
@@ -182,59 +183,58 @@ private:
   void cloudcb(const PointCloud::ConstPtr&  cloud)
   {
     //X,Y,Z of the centroid
-    double x = 0.0;
-    double y = 0.0;
-    double z = 0.0;
+    double x_2 = 0.0;
+    double y_2 = 0.0;
+    double z_2 = 0.0;
+
+    double x_4 = 0.0;
+    double y_4 = 0.0;
+    double z_4 = 0.0;
     //Number of points observed
     unsigned int n = 0;
+    unsigned int m = 0;
     //Iterate through all the points in the region and find the average of the position
     BOOST_FOREACH (const pcl::PointXYZ& pt, cloud->points)
     {
       //First, ensure that the point's position is valid. This must be done in a seperate
       //if because we do not want to perform comparison on a nan value.
-      if (!std::isnan(x) && !std::isnan(y) && !std::isnan(z))
-      {
         //Test to ensure the point is within the aceptable box.
-        if (-pt.y > min_y_ && -pt.y < max_y_ && pt.x < max_x_ && pt.x > min_x_ && pt.z < max_z_)
+        //add min_z_
+        if (!std::isnan(x_2) && !std::isnan(y_2) && !std::isnan(z_2) && -pt.y > min_y_ && -pt.y < max_y_ && pt.x < max_x_ && pt.x > min_x_ && pt.z < max_z_)
         {
           //Add the point to the totals
-          x += pt.x;
-          y += pt.y;
-          z += pt.z;
+          x_2 += pt.x;
+          y_2 += pt.y;
+          z_2 += pt.z;
           n++;
         }
-      }
+        if (!std::isnan(x_4) && !std::isnan(y_4) && !std::isnan(z_4) && -pt.y > min_y_ && -pt.y < max_y_ && pt.x < max_x_ && pt.x > min_x_ && pt.z < 4.0 && pt.z > 1.0)
+        {
+          x_4 += pt.x;
+          y_4 += pt.y;
+          z_4 += pt.z;
+          m++;
+        } 
     }
     
     //If there are points, find the centroid and calculate the command goal.
     //If there are no points, simply publish a stop goal.
-    if (n)
+    if (n>=m && n>0)
     { 
-      x /= n; 
-      y /= n; 
-      z /= n;  
+      x_2 /= n; 
+      y_2 /= n; 
+      z_2 /= n;  
       
-      ROS_DEBUG("Centriod at %f %f %f with %d points", x, y, z, n);
+      ROS_DEBUG("Centriod at %f %f %f with %d points", x_2, y_2, z_2, n);
       
       BOOST_FOREACH (const int reaction, stim_prox2_)
       {
         ROS_INFO("%i", reaction);
-	react(reaction);
+	react(reaction, z_2);
 	ros::Duration(0.5).sleep();
-	/*
-        if (stim_prox2_.size() > 1) 
-        {
-          for (int i = 0; i < 10; i++)
-          {
-            react(reaction);
-          }
-        }
-        else
-        {
-          react(reaction);
-        }
-	*/
+	
       }
+
 
 //      geometry_msgs::Twist cmd;
 //      cmd.linear.x = (z - goal_z_) * z_scale_;
@@ -246,6 +246,20 @@ private:
 //make react function containing switch statement
 
     }
+    else if (n<m)
+    {
+      x_4 /= m;
+      y_4 /= m;
+      z_4 /= m;
+
+      BOOST_FOREACH (const int reaction, stim_prox4_)
+      {
+        ROS_INFO("%i", reaction);
+	react(reaction, z_4);
+	ros::Duration(0.5).sleep();
+	
+      }
+    }    
     else
     {
       ROS_DEBUG("No points detected, stopping the robot");
@@ -257,7 +271,8 @@ private:
   ros::Subscriber sub_;
   ros::Subscriber relationship_sub_;
   ros::Publisher cmdpub_;
-  std::vector<int> stim_prox2_;
+  std::vector<int> stim_prox2_; 
+  std::vector<int> stim_prox4_;
 };
 
 PLUGINLIB_DECLARE_CLASS(turtlebot_follower, TurtlebotFollower, turtlebot_follower::TurtlebotFollower, nodelet::Nodelet);
