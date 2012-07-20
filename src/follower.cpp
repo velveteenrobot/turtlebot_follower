@@ -38,7 +38,7 @@
 #include <turtlebot_follower/Relationship.h>
 #include <iostream>
 
-enum { SPIN_RIGHT = 1, SPIN_LEFT = 2, FORWARD = 3, BACKWARD = 4}; 
+enum { SPIN_CW = 1, SPIN_CCW = 2, FORWARD = 3, BACKWARD = 4}; 
 
 namespace turtlebot_follower
 {
@@ -134,11 +134,11 @@ private:
     geometry_msgs::Twist cmd;
     switch(reaction)
     {
-      case SPIN_RIGHT:
+      case SPIN_CW:
         cmd.linear.x = 0;
         cmd.angular.z = -6;
         break;
-      case SPIN_LEFT:
+      case SPIN_CCW:
         cmd.linear.x = 0;
         cmd.angular.z = 6;
         break;
