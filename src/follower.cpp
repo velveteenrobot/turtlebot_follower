@@ -38,7 +38,7 @@
 #include <turtlebot_follower/Relationship.h>
 #include <iostream>
 
-enum { SPIN_CW = 1, SPIN_CCW = 2, FORWARD = 3, BACKWARD = 4}; 
+enum { SPIN_CW = 1, SPIN_CCW = 2, FORWARD = 3, BACKWARD = 4, COW = 5}; 
 
 namespace turtlebot_follower
 {
@@ -150,6 +150,9 @@ private:
       case BACKWARD:
         cmd.linear.x = -5;
         cmd.angular.z = 0;
+        break;
+      case COW:
+        system("/opt/ros/electric/stacks/turtlebot_apps/turtlebot_follower/src/chirp.bash");
         break;
       default:
         cmd.linear.x = 0;
