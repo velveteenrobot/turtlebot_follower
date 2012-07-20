@@ -4,15 +4,15 @@ import struct
 
 
 class Relationship(roslib.message.Message):
-  _md5sum = "186a2f03c193b9a5924bd75d9a9926b7"
+  _md5sum = "efb7551f1a64fb9a320cd7d0e9a57390"
   _type = "turtlebot_follower/Relationship"
   _has_header = False #flag to mark the presence of a Header object
-  _full_text = """string[] prox2
-string[] prox4
+  _full_text = """int32[] prox2
+int32[] prox4
 
 """
   __slots__ = ['prox2','prox4']
-  _slot_types = ['string[]','string[]']
+  _slot_types = ['int32[]','int32[]']
 
   def __init__(self, *args, **kwds):
     """
@@ -54,14 +54,12 @@ string[] prox4
     try:
       length = len(self.prox2)
       buff.write(_struct_I.pack(length))
-      for val1 in self.prox2:
-        length = len(val1)
-        buff.write(struct.pack('<I%ss'%length, length, val1))
+      pattern = '<%si'%length
+      buff.write(struct.pack(pattern, *self.prox2))
       length = len(self.prox4)
       buff.write(_struct_I.pack(length))
-      for val1 in self.prox4:
-        length = len(val1)
-        buff.write(struct.pack('<I%ss'%length, length, val1))
+      pattern = '<%si'%length
+      buff.write(struct.pack(pattern, *self.prox4))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -76,27 +74,17 @@ string[] prox4
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
-      self.prox2 = []
-      for i in range(0, length):
-        start = end
-        end += 4
-        (length,) = _struct_I.unpack(str[start:end])
-        start = end
-        end += length
-        val1 = str[start:end]
-        self.prox2.append(val1)
+      pattern = '<%si'%length
+      start = end
+      end += struct.calcsize(pattern)
+      self.prox2 = struct.unpack(pattern, str[start:end])
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
-      self.prox4 = []
-      for i in range(0, length):
-        start = end
-        end += 4
-        (length,) = _struct_I.unpack(str[start:end])
-        start = end
-        end += length
-        val1 = str[start:end]
-        self.prox4.append(val1)
+      pattern = '<%si'%length
+      start = end
+      end += struct.calcsize(pattern)
+      self.prox4 = struct.unpack(pattern, str[start:end])
       return self
     except struct.error as e:
       raise roslib.message.DeserializationError(e) #most likely buffer underfill
@@ -113,14 +101,12 @@ string[] prox4
     try:
       length = len(self.prox2)
       buff.write(_struct_I.pack(length))
-      for val1 in self.prox2:
-        length = len(val1)
-        buff.write(struct.pack('<I%ss'%length, length, val1))
+      pattern = '<%si'%length
+      buff.write(self.prox2.tostring())
       length = len(self.prox4)
       buff.write(_struct_I.pack(length))
-      for val1 in self.prox4:
-        length = len(val1)
-        buff.write(struct.pack('<I%ss'%length, length, val1))
+      pattern = '<%si'%length
+      buff.write(self.prox4.tostring())
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -137,27 +123,17 @@ string[] prox4
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
-      self.prox2 = []
-      for i in range(0, length):
-        start = end
-        end += 4
-        (length,) = _struct_I.unpack(str[start:end])
-        start = end
-        end += length
-        val1 = str[start:end]
-        self.prox2.append(val1)
+      pattern = '<%si'%length
+      start = end
+      end += struct.calcsize(pattern)
+      self.prox2 = numpy.frombuffer(str[start:end], dtype=numpy.int32, count=length)
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
-      self.prox4 = []
-      for i in range(0, length):
-        start = end
-        end += 4
-        (length,) = _struct_I.unpack(str[start:end])
-        start = end
-        end += length
-        val1 = str[start:end]
-        self.prox4.append(val1)
+      pattern = '<%si'%length
+      start = end
+      end += struct.calcsize(pattern)
+      self.prox4 = numpy.frombuffer(str[start:end], dtype=numpy.int32, count=length)
       return self
     except struct.error as e:
       raise roslib.message.DeserializationError(e) #most likely buffer underfill

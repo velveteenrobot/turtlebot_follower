@@ -38,6 +38,8 @@
 #include <turtlebot_follower/Relationship.h>
 #include <iostream>
 
+enum { SPIN_RIGHT = 1, SPIN_LEFT = 2, FORWARD = 3, BACKWARD = 4}; 
+
 namespace turtlebot_follower
 {
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
@@ -122,13 +124,41 @@ private:
           ROS_INFO("%s", msg->prox2[i].c_str());
     }
     */
-    BOOST_FOREACH (const std::string& reaction, msg->prox2)
-    {
-      ROS_INFO("%s", reaction.c_str());
-    }
-   
+   stim_prox2_ = msg->prox2;
     
   }
+
+  void react(int reaction) 
+  {
+    ROS_INFO("%i", reaction);
+    geometry_msgs::Twist cmd;
+    switch(reaction)
+    {
+      case SPIN_RIGHT:
+        cmd.linear.x = 0;
+        cmd.angular.z = -6;
+        break;
+      case SPIN_LEFT:
+        cmd.linear.x = 0;
+        cmd.angular.z = 6;
+        break;
+      case FORWARD:
+        cmd.linear.x = 5;
+        cmd.angular.z = 0;
+        break;
+      case BACKWARD:
+        cmd.linear.x = -5;
+        cmd.angular.z = 0;
+        break;
+      default:
+        cmd.linear.x = 0;
+        cmd.angular.z = 0;
+        ROS_INFO("%s", "NO SUCH THING.");
+        break;
+    }
+    cmdpub_.publish(cmd);
+      
+  } 
 
   void reconfigure(turtlebot_follower::FollowerConfig &config, uint32_t level)
   {
@@ -186,9 +216,27 @@ private:
       
       ROS_DEBUG("Centriod at %f %f %f with %d points", x, y, z, n);
       
-      geometry_msgs::Twist cmd;
-      cmd.linear.x = (z - goal_z_) * z_scale_;
-      cmd.angular.z = -x * x_scale_;
+      BOOST_FOREACH (const int reaction, stim_prox2_)
+      {
+        ROS_INFO("%i", reaction);
+	/*
+        if (stim_prox2_.size() > 1) 
+        {
+          for (int i = 0; i < 10; i++)
+          {
+            react(reaction);
+          }
+        }
+        else
+        {
+          react(reaction);
+        }
+	*/
+      }
+
+//      geometry_msgs::Twist cmd;
+//      cmd.linear.x = (z - goal_z_) * z_scale_;
+//      cmd.angular.z = -x * x_scale_;
       //cmdpub_.publish(cmd);
 
 //check the objects for proximity2, object.proximity2,
@@ -207,6 +255,7 @@ private:
   ros::Subscriber sub_;
   ros::Subscriber relationship_sub_;
   ros::Publisher cmdpub_;
+  std::vector<int> stim_prox2_;
 };
 
 PLUGINLIB_DECLARE_CLASS(turtlebot_follower, TurtlebotFollower, turtlebot_follower::TurtlebotFollower, nodelet::Nodelet);

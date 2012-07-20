@@ -1,2 +1,2 @@
-string[] prox2
-string[] prox4
+int32[] prox2
+int32[] prox4
